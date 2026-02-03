@@ -28,15 +28,15 @@ CORS(app)
 
 # ---------------- IBM Quantum Connection ----------------
 
-    service = QiskitRuntimeService(
-        channel="ibm_cloud",
-        token=os.getenv("IBM_QUANTUM_TOKEN"),
-        instance=os.getenv("IBM_QUANTUM_INSTANCE")
-    )
+service = QiskitRuntimeService(
+    channel="ibm_cloud",
+    token=os.getenv("IBM_QUANTUM_TOKEN"),
+    instance=os.getenv("IBM_QUANTUM_INSTANCE")
+)
 
-    # backend = service.backend("ibm_brisbane")
-    backend = service.least_busy(operational=True, simulator=False)
-    print("✅ Connected to IBM Quantum backend:", backend.name)
+# backend = service.backend("ibm_brisbane")
+backend = service.least_busy(operational=True, simulator=False)
+print("✅ Connected to IBM Quantum backend:", backend.name)
 
 # ---------------------------------------------------------
 shared_key_bits = []
