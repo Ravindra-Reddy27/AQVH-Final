@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>BB84 Quantum Key Distribution Protocol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --secondary: #6366f1;
+            --accent: #22c55e;
+            --warning: #f59e0b;
+            --text: #1e293b;
+            --background: #f8fafc;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--background);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .glass:hover {
+            transform: translateY(-5px);
+        }
+
+        .bb84-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .bb84-table th,
+        .bb84-table td {
+            text-align: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .bb84-table th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.9rem;
+        }
+
+        .bb84-table tr:nth-child(even) {
+            background: rgba(37, 99, 235, 0.03);
+        }
+
+        .bb84-table tr:hover {
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        .sifted-key {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.2em;
+            padding: 1rem;
+            background: rgba(37, 99, 235, 0.05);
+            border-radius: 1rem;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .example-block {
+            margin-bottom: 3rem;
+            padding: 2rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .example-block {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .matched-row {
+            position: relative;
+            /* background-color: rgba(21, 128, 61, 0.02); */
+            transition: all 0.3s ease;
+        }
+
+        .matched-row td {
+            position: relative;
+            border: none;
+        }
+
+        .matched-row::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            left: 8px;
+            right: 8px;
+            border: 2px dashed #15803d;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .matched-row:hover {
+            background-color: rgba(21, 128, 61, 0.05);
+        }
+
+        .simulator-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            letter-spacing: 0.025em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
+            border: 2px solid transparent;
+        }
+
+        .simulator-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.15);
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+        }
+
+        .simulator-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="max-w-5xl mx-auto py-16 px-6">
+        <div class="text-center mb-12">
+            <h1
+                class="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                BB84 Quantum Key Distribution Protocol
+            </h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                A step-by-step guide to understanding quantum cryptography's fundamental protocol
+            </p>
+        </div>
+
+        <!-- Introduction -->
+        <div class="glass p-8 mb-10 example-block">
+            <h2 class="section-title">What is BB84?</h2>
+            <div class="prose max-w-none">
+                <p class="mb-4">
+                    The BB84 protocol, developed by Bennett and Brassard in 1984, is the first quantum cryptography
+                    protocol.
+                    It enables two parties (traditionally called Alice and Bob) to generate a shared secret key using
+                    quantum
+                    properties of photons.
+                </p>
+                <h3 class="text-xl font-semibold mb-3 text-primary">Key Concepts:</h3>
+                <ul class="list-disc list-inside mb-4 space-y-2">
+                    <li><strong>Quantum States:</strong> Information is encoded in quantum states (photon polarization)
+                    </li>
+                    <li><strong>Two Bases:</strong> Rectilinear (+) and Diagonal (×) measurement bases are used</li>
+                    <li><strong>No-Cloning Theorem:</strong> Quantum states cannot be perfectly copied</li>
+                    <li><strong>Measurement Impact:</strong> Measuring in the wrong basis disturbs the state</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Protocol Steps -->
+        <div class="glass p-8 mb-10 example-block">
+            <h2 class="section-title">Protocol Steps</h2>
+            <div class="flex flex-col space-y-4">
+                <div class="step-block">
+                    <h3 class="text-lg font-semibold text-primary">1. Quantum Transmission</h3>
+                    <p>Alice sends qubits to Bob, randomly choosing between:</p>
+                    <div class="grid grid-cols-2 gap-4 my-4 text-center">
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <strong class="text-xl block mb-2">Rectilinear Basis (+)</strong>
+                            <span class="text-lg">↑ = 0, → = 1</span> <!-- ↑ → -->
+                        </div>
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <strong class="text-xl block mb-2">Diagonal Basis (×)</strong>
+                            <span class="text-lg">↗ = 0, ↖ = 1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-block">
+                    <h3 class="text-lg font-semibold text-primary">2. Measurement</h3>
+                    <p>Bob measures each qubit, randomly choosing either basis (+) or (×)</p>
+                </div>
+
+                <div class="step-block">
+                    <h3 class="text-lg font-semibold text-primary">3. Basis Reconciliation</h3>
+                    <p>Alice and Bob publicly share which bases they used (but not the bits)</p>
+                </div>
+
+                <div class="step-block">
+                    <h3 class="text-lg font-semibold text-primary">4. Key Sifting</h3>
+                    <p>They keep only the bits where they used the same basis</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example 1: Successful Key Exchange -->
+        <div class="glass p-8 mb-10 example-block">
+            <div class="section-title">Base1 → Base2</div>
+            <div class="subtitle">Alice and Bob exchange bits using BB84. Bases are revealed publicly, and only matching
+                bases are used for the sifted key.</div>
+            <table class="bb84-table w-full rounded-lg overflow-hidden text-lg mb-4">
+                <thead>
+                    <tr>
+                        <th>QuBit</th>
+                        <th>Base1 Bit</th>
+                        <th>Base1 Bases</th>
+                        <th>Base2 Bases</th>
+                        <th>Bases2 Bits</th>
+                        <th>Match</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="matched-row">
+                        <td>1</td>
+                        <td>0 [↑]</td>
+                        <td>+</td>
+                        <td>+</td>
+                        <td>0 [↑]</td>
+                        <td class="text-green-600 font-bold">✓</td>
+                    </tr>
+                    <tr class="matched-row">
+                        <td>2</td>
+                        <td>1 [↖]</td>
+                        <td>x</td>
+                        <td>x</td>
+                        <td>1 [↖]</td>
+                        <td class="text-green-600 font-bold">✓</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>0 [↑]</td>
+                        <td>+</td>
+                        <td>x</td>
+                        <td>0,1 - 1 [→]</td>
+                        <td class="text-red-400 font-bold">✗</td>
+                    </tr>
+                    <tr class="matched-row">
+                        <td>4</td>
+                        <td>1[↖]</td>
+                        <td>x</td>
+                        <td>x</td>
+                        <td>1 [↖]</td>
+                        <td class="text-green-600 font-bold">✓</td>
+                    </tr>
+                    <tr class="matched-row">
+                        <td>5</td>
+                        <td>1 [↖]</td>
+                        <td>x</td>
+                        <td>x</td>
+                        <td>1 [↖]</td>
+                        <td class="text-green-600 font-bold">✓</td>
+                    </tr>
+                </tbody>
+            </table>
+            <center>
+                <div class="subtitle">Sifted Key (only matched bases):</div>
+                <div class="sifted-key">0&nbsp;1&nbsp;1&nbsp;1</div>
+            </center>
+        </div>
+
+        <!-- Base1-Eve-Base2 Example -->
+        <div class="glass p-6 example-block">
+            <div class="section-title">Base1 → Eve → Base2</div>
+            <div class="subtitle">Eve intercepts and measures the qubits, possibly disturbing the key. Her basis choices
+                and measurements are shown below.</div>
+            <table class="bb84-table w-full rounded-lg overflow-hidden text-lg mb-4">
+                <thead>
+                    <tr>
+                        <th>QuBit</th>
+                        <th>Base1 Bit</th>
+                        <th>Base1 Bases</th>
+                        <th>Eve Bases</th>
+                        <th>Eve Bits</th>
+                        <th>Base2 Bases</th>
+                        <th>Bases2 Bits</th>
+                        <th>Match</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="matched-row">
+                        <td>1</td>
+                        <td>0 [↑]</td>
+                        <td>+</td>
+                        <td>x</td>
+                        <td>0,1 - 1 [↖]</td>
+                        <td>+</td>
+                        <td>0,1 - 1 [→]</td>
+                        <td class="text-green-600 font-bold">✓</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>1 [↖]</td>
+                        <td>x</td>
+                        <td>x</td>
+                        <td>1 [↖]</td>
+                        <td>+</td>
+                        <td>0,1 - 0 [↑]</td>
+                        <td class="text-red-400 font-bold">✗</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>0 [↑]</td>
+                        <td>+</td>
+                        <td>+</td>
+                        <td>0 [↑]</td>
+                        <td>x</td>
+                        <td>0,1 - 0 [↗]</td>
+                        <td class="text-red-400 font-bold">✗</td>
+                    </tr>
+                    <tr class="matched-row">
+                        <td>4</td>
+                        <td>1 [→]</td>
+                        <td>+</td>
+                        <td>+</td>
+                        <td>1 [→]</td>
+                        <td>+</td>
+                        <td>1 [→]</td>
+                        <td class="text-green-600 font-bold">✓</td>
+                    </tr>
+                    <tr class="matched-row">
+                        <td>5</td>
+                        <td>0 [↑]</td>
+                        <td>+</td>
+                        <td>x</td>
+                        <td>0,1 - 1 [↖]</td>
+                        <td>+</td>
+                        <td>0,1 - 1 [→]</td>
+                        <td class="text-green-600 font-bold">✓</td>
+                    </tr>
+                </tbody>
+            </table>
+            <center>
+                <div class="subtitle">Sifted Key Results:</div>
+                <div class="space-y-4">
+                    <div>
+                        <p class="font-semibold text-gray-700">Base1: <span class="sifted-key">0 1 0</span></p>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-700">Base2: <span class="sifted-key">1 1 1</span></p>
+                    </div>
+                    <div class="mt-4 text-red-500 font-medium">
+                        Bits are different, so they must discard the key.
+                    </div>
+                </div>
+            </center>
+            <div>
+
+            </div>
+
+            </table>
+        </div>
+        <div class="glass p-6 example-block">
+            <div class="section-title">AES-256</div>
+            <div class="max-w-lg mx-auto space-y-8">
+
+                <!-- AGS Encryption Section -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-center text-blue-700">🔐 AES Encryption Flow (Alice)</h2>
+
+                    <!-- Step 1 -->
+                    <div class="flex flex-col space-y-1">
+                        <div class="px-4 py-2 bg-blue-100 rounded font-semibold">Step 1: Prepare Message</div>
+                        <div class="px-4 py-2 bg-gray-50 rounded">Example:
+                            <code>Launch confirmed. Target coordinates: 48.8584° N, 2.2945° E. Time: 0300Z.</code>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex flex-col space-y-1">
+                        <div class="px-4 py-2 bg-blue-100 rounded font-semibold">Step 2: Encrypt Message (AGS‑256)</div>
+                        <div class="px-4 py-2 bg-gray-50 rounded">Example: Key = <code>603deb1015ca71be2b73aef0857d7781
+                        1f352c073b6108d72d9810a30914dff4</code></div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="flex flex-col space-y-1">
+                        <div class="px-4 py-2 bg-blue-100 rounded font-semibold">Step 3: Generate Ciphertext</div>
+                        <div class="px-4 py-2 bg-gray-50 rounded">Example: <code>9f2a3b7c08d…e71</code></div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="flex flex-col space-y-1">
+                        <div class="px-4 py-2 bg-blue-100 rounded font-semibold">Step 4: Send Ciphertext</div>
+                        <div class="px-4 py-2 bg-gray-50 rounded">Example: Sent via safe
+                            channel</div>
+                    </div>
+                </div>
+
+                <!-- Separator -->
+                <div class="text-center text-gray-400 font-bold">↓</div>
+
+                <!-- AGS Decryption Section -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-center text-green-700">🔓 AES-256 Decryption Flow (Bob)</h2>
+
+                    <!-- Step 0 -->
+                    <div class="flex flex-col space-y-1">
+                        <div class="px-4 py-2 bg-purple-100 rounded font-semibold">Step 0: Key Agreement (BB84 Protocol)
+                        </div>
+                        <div class="px-4 py-2 bg-gray-50 rounded">
+                            Bob also has the <code>same 256-bit key</code> from BB84.
+                        </div>
+                    </div>
+
+                    <!-- Step 1 -->
+                    <div class="flex flex-col space-y-1">
+                        <div class="px-4 py-2 bg-green-100 rounded font-semibold">Step 1: Receive Ciphertext</div>
+                        <div class="px-4 py-2 bg-gray-50 rounded">
+                            Received : <code>9f2a3b7c08d…e71</code>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex flex-col space-y-1">
+                        <div class="px-4 py-2 bg-green-100 rounded font-semibold">Step 2: Decrypt with AES-256</div>
+                        <div class="px-4 py-2 bg-gray-50 rounded">
+                            Key (from BB84) = <code>603deb1015ca71be2b73aef0857d7781
+                                            1f352c073b6108d72d9810a30914dff4</code>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="flex flex-col space-y-1">
+                        <div class="px-4 py-2 bg-green-100 rounded font-semibold">Step 3: Retrieve Original Message
+                        </div>
+                        <div class="px-4 py-2 bg-gray-50 rounded">
+                            <code>Launch confirmed. Target coordinates: 48.8584° N, 2.2945° E. Time: 0300Z.</code>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="flex flex-col space-y-1">
+                        <div class="px-4 py-2 bg-green-100 rounded font-semibold">Step 4: Read Message</div>
+                        <div class="px-4 py-2 bg-gray-50 rounded">
+                            <code>Message Received Securely!</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </div>
+
+    <div class="text-center pb-16">
+        <a href="index.html" target="_blank" class="simulator-btn inline-block">
+            Try BB84 Simulator →
+        </a>
+    </div>
+
+</body>
+
+</html>

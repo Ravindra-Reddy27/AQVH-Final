@@ -1,0 +1,439 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>QuantumX - Secure Quantum Interface</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+        <style>
+            :root {
+                --primary: #0ea5e9;
+                --secondary: #6366f1;
+                --success: #10b981;
+                --warning: #ef4444;
+                --bg-dark: #030712;
+                --text-primary: #f1f5f9;
+            }
+
+            body {
+                font-family: 'Space Grotesk', sans-serif;
+                background-color: var(--bg-dark);
+                color: var(--text-primary);
+                min-height: 100vh;
+            }
+
+            .code-font {
+                font-family: 'Fira Code', monospace;
+            }
+
+            /* Quantum Background Effect */
+            .quantum-bg {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+                background: 
+                    linear-gradient(to bottom right, rgba(14, 165, 233, 0.05), transparent),
+                    radial-gradient(at 40% 20%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+                    radial-gradient(at 80% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+            }
+
+            .quantum-grid {
+                background-image: 
+                    linear-gradient(rgba(14, 165, 233, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(14, 165, 233, 0.05) 1px, transparent 1px);
+                background-size: 50px 50px;
+                background-position: center center;
+            }
+
+            /* Enhanced Glass Effects */
+            .glass-panel {
+                background: rgba(2, 6, 23, 0.65);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(14, 165, 233, 0.1);
+                box-shadow: 
+                    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            }
+
+            .glass-panel-hover:hover {
+                background: rgba(2, 6, 23, 0.75);
+                border-color: rgba(14, 165, 233, 0.2);
+            }
+
+            /* Input Styling */
+            .quantum-input {
+                background: rgba(2, 6, 23, 0.8);
+                border: 1px solid rgba(14, 165, 233, 0.2);
+                color: var(--text-primary);
+                font-family: 'Fira Code', monospace;
+            }
+
+            .quantum-input:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+                outline: none;
+            }
+
+            /* Button Effects */
+            .quantum-button {
+                background: linear-gradient(135deg, 
+                    rgba(14, 165, 233, 0.9),
+                    rgba(99, 102, 241, 0.9)
+                );
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .quantum-button::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg,
+                    rgba(99, 102, 241, 0.9),
+                    rgba(14, 165, 233, 0.9)
+                );
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .quantum-button:hover::after {
+                opacity: 1;
+            }
+
+            .quantum-button span {
+                position: relative;
+                z-index: 1;
+            }
+
+            /* Special States */
+            .secure-text {
+                color: var(--success);
+            }
+
+            .compromised-text {
+                color: var(--warning);
+            }
+
+            /* Ciphertext States */
+            .ciphertext-clear {
+                background: rgba(2, 6, 23, 0.4);
+                border: 1px solid rgba(16, 185, 129, 0.3);
+                transition: all 0.3s ease;
+            }
+
+            .ciphertext-blurred {
+                background: rgba(2, 6, 23, 0.8);
+                backdrop-filter: blur(8px);
+                border: 1px solid rgba(239, 68, 68, 0.3);
+                transition: all 0.3s ease;
+            }
+
+            /* Results Table */
+            .quantum-table {
+                border-collapse: separate;
+                border-spacing: 0;
+                width: 100%;
+            }
+
+            .quantum-table td {
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid rgba(14, 165, 233, 0.1);
+            }
+
+            .quantum-table tr:hover {
+                background: rgba(14, 165, 233, 0.05);
+            }
+
+            /* Circuit Visualization */
+            .circuit-container img {
+                border: 1px solid rgba(14, 165, 233, 0.2);
+                border-radius: 0.5rem;
+                transition: all 0.3s ease;
+            }
+
+            .circuit-container img:hover {
+                border-color: rgba(14, 165, 233, 0.4);
+                box-shadow: 0 0 20px rgba(14, 165, 233, 0.1);
+            }
+
+            /* Animation for status transitions */
+            @keyframes statusFade {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .status-animation {
+                animation: statusFade 0.3s ease-out;
+            }
+        </style>
+    </head>
+    <body class="quantum-grid">
+        <div class="quantum-bg"></div>
+
+        <!-- Header -->
+        <header class="glass-panel py-8 mb-6">
+            <h1 class="text-5xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] mb-2">
+                QuantumX
+            </h1>
+            <p class="text-center text-sky-200 tracking-wide">Secure Quantum Computing Interface Prototype</p>
+        </header>
+
+        <!-- Status Bar -->
+        <div id="status" class="hidden max-w-3xl mx-auto mb-6 glass-panel p-4 rounded-lg text-center status-animation"></div>
+
+        <!-- Main Content -->
+        <main class="container mx-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Block - Simulation -->
+            <div class="glass-panel rounded-xl p-6">
+                <h2 class="text-2xl font-bold mb-6 text-sky-400">
+                    Quantum Simulation
+                </h2>
+
+                <label class="block mb-2 text-sky-200">Number of Qubits:</label>
+                <input id="bits" type="number" min="1" value="8" 
+                    class="quantum-input w-full p-3 rounded-lg mb-6" />
+
+                <!-- Control Buttons -->
+                <div class="flex gap-4 mb-8">
+                    <button id="btn-base2"
+                        class="quantum-button flex-1 py-3 px-4 rounded-lg text-white font-medium">
+                        <span>Base1 → Base2</span>
+                    </button>
+                    <button id="btn-eve"
+                        class="quantum-button flex-1 py-3 px-4 rounded-lg text-white font-medium"
+                        style="background: linear-gradient(135deg, var(--warning), #be185d)">
+                        <span>Base1 → Eve → Base2</span>
+                    </button>
+                </div>
+
+                <!-- Results Section -->
+                <div id="results" class="hidden space-y-6">
+                    <h3 class="text-xl font-semibold mb-4 text-sky-400">
+                        Quantum States
+                    </h3>
+                    <div class="glass-panel rounded-lg overflow-hidden">
+                        <table class="quantum-table code-font text-sm">
+                            <tbody>
+                                <tr><td class="font-medium">Base-1 bits</td><td><span id="alice_bits"></span></td></tr>
+                                <tr><td class="font-medium">Base-1 bases</td><td><span id="alice_bases"></span></td></tr>
+                                <tr id="eve_row" class="hidden"><td class="font-medium">Eve's bases</td><td><span id="eve_bases"></span></td></tr>
+                                <tr><td class="font-medium">Base-2 bases</td><td><span id="bob_bases"></span></td></tr>
+                                <tr><td class="font-medium">Base-1 good bits</td><td><span id="alice_good"></span></td></tr>
+                                <tr><td class="font-medium">Base-2 good bits</td><td><span id="bob_good"></span></td></tr>
+                                <tr><td class="font-medium">Fidelity</td><td><span id="fidelity"></span></td></tr>
+                                <tr><td class="font-medium">Loss</td><td><span id="loss"></span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4 text-sky-400">Circuit Diagram</h4>
+                        <div id="circuit_container" class="circuit-container space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Block - Encryption -->
+            <div class="glass-panel rounded-xl p-6">
+                <h2 class="text-2xl font-bold mb-6 text-sky-400">
+                    Quantum Encryption
+                </h2>
+
+                <!-- Base1 Section -->
+                <div class="space-y-4">
+                    <h3 class="font-medium text-sky-200">Base1 Terminal</h3>
+                    <input id="base1_msg" type="text" placeholder="Enter message for quantum encryption..."
+                        class="quantum-input w-full p-3 rounded-lg" />
+                    
+                    <button id="btn-encrypt" disabled
+                        class="quantum-button w-full py-3 rounded-lg text-white font-medium">
+                        <span>Generate Ciphertext</span>
+                    </button>
+
+                    <div id="ciphertext-container" class="ciphertext-clear p-4 rounded-lg transition-all duration-300">
+                        <p class="text-sky-400 font-medium mb-2">Quantum Ciphertext:</p>
+                        <p class="break-all code-font text-sky-100" id="ciphertext"></p>
+                    </div>
+
+                    <button id="btn-send" disabled
+                        class="quantum-button w-full py-3 rounded-lg text-white font-medium">
+                        <span>Quantum Transmit</span>
+                    </button>
+                </div>
+
+                <!-- Base2 Section -->
+                <div class="mt-8" id="base2-container">
+                    <h3 class="font-medium text-sky-200 mb-4">Base2 Terminal</h3>
+                    <div class="glass-panel p-4 rounded-lg transition-all duration-300">
+                        <p class="text-sky-400 font-medium mb-2">Decrypted Message:</p>
+                        <p class="break-all code-font text-sky-100" id="original_msg"></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="glass-panel py-6 text-center mt-8">
+            <button onclick="window.open('/explanation', '_blank')"
+                    class="quantum-button px-8 py-3 rounded-lg text-white font-medium">
+                <span>BB84 Documentation</span>
+            </button>
+            <p class="mt-4 text-sky-400 text-sm">© 2025 QuantumX </p>
+        </footer>
+
+        <!-- Script -->
+        <script>
+            const API_BASE = "";
+            let ciphertextGlobal = "";
+
+            const $ = (id) => document.getElementById(id);
+
+            function setBusy(el, busy) {
+                el.disabled = busy;
+                el.classList.toggle("opacity-50", busy);
+                el.classList.toggle("cursor-not-allowed", busy);
+            }
+
+            function setStatus(msg, ok=true) {
+                const s = $("status");
+                s.className = `glass-panel max-w-3xl mx-auto mb-6 p-4 rounded-lg text-center status-animation ${
+                    ok ? 'secure-text' : 'compromised-text'
+                }`;
+                s.innerText = msg;
+                s.classList.remove("hidden");
+                
+                // Update ciphertext container based on security status
+                const cipherContainer = $("ciphertext-container");
+                const base2Container = $("base2-container");
+                
+                if (ok) {
+                    // Secure channel - show clearly
+                    cipherContainer.className = 'ciphertext-clear p-4 rounded-lg';
+                    base2Container.style.opacity = '1';
+                    base2Container.querySelector('.glass-panel').style.backdropFilter = 'blur(0px)';
+                } else {
+                    // Eve detected - apply blur effect
+                    cipherContainer.className = 'ciphertext-blurred p-4 rounded-lg';
+                    base2Container.style.opacity = '0.7';
+                    base2Container.querySelector('.glass-panel').style.backdropFilter = 'blur(8px)';
+                }
+            }
+
+            async function runSimulation(mode) {
+                const bits = $("bits").value || 8;
+                setBusy($("btn-base2"), true);
+                setBusy($("btn-eve"), true);
+
+                try {
+                    const res = await fetch(`${API_BASE}/run`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ bits: Number(bits), mode })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Backend error");
+
+                    $("alice_bits").innerText = data.alice_bits.join(", ");
+                    $("alice_bases").innerText = data.alice_bases.join(", ");
+                    $("bob_bases").innerText = data.bob_bases.join(", ");
+                    $("alice_good").innerText = data.alice_good_bits.join(", ");
+                    $("bob_good").innerText = data.bob_good_bits.join(", ");
+                    $("fidelity").innerText = data.fidelity.toFixed(2);
+                    $("loss").innerText = data.loss.toFixed(2);
+
+                    if (mode === "eve" && data.eve_bases.length) {
+                        $("eve_row").classList.remove("hidden");
+                        $("eve_bases").innerText = data.eve_bases.join(", ");
+                    } else {
+                        $("eve_row").classList.add("hidden");
+                    }
+
+                    const container = $("circuit_container");
+                    container.innerHTML = "";
+                    if (mode === "eve" && data.eve_img) {
+                        const img1 = document.createElement("img");
+                        img1.src = "data:image/png;base64," + data.eve_img;
+                        img1.className = "w-full rounded-lg shadow-lg";
+                        container.appendChild(img1);
+                    }
+                    if (data.bob_img) {
+                        const img2 = document.createElement("img");
+                        img2.src = "data:image/png;base64," + data.bob_img;
+                        img2.className = "w-full rounded-lg shadow-lg mt-4";
+                        container.appendChild(img2);
+                    }
+
+                    $("results").classList.remove("hidden");
+
+                    const insecure = mode === "eve";
+                    $("btn-encrypt").disabled = insecure;
+                    $("btn-send").disabled = insecure;
+                    if (insecure) {
+                        setStatus("⚠️ Quantum Channel Compromised - Encryption Disabled", false);
+                    } else {
+                        setStatus("✅ Quantum Simulation Complete - Secure Channel", true);
+                    }
+
+                } catch (err) {
+                    setStatus("❌ " + err.message, false);
+                    console.error(err);
+                } finally {
+                    setBusy($("btn-base2"), false);
+                    setBusy($("btn-eve"), false);
+                }
+            }
+
+            async function convertToCiphertext() {
+                const msg = $("base1_msg").value;
+                if (!msg) return alert("Enter a message first!");
+                try {
+                    const res = await fetch(`${API_BASE}/encrypt`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: msg })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Encryption failed");
+
+                    ciphertextGlobal = data.ciphertext;
+                    $("ciphertext").innerText = ciphertextGlobal;
+                    setStatus("✅ Quantum Encryption Complete", true);
+                } catch (err) {
+                    setStatus("❌ " + err.message, false);
+                }
+            }
+
+            async function sendToBase2() {
+                if (!ciphertextGlobal) return alert("No ciphertext available!");
+                try {
+                    const res = await fetch(`${API_BASE}/decrypt`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ ciphertext: ciphertextGlobal })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Decryption failed");
+
+                    $("original_msg").innerText = data.original;
+                    setStatus("✅ Quantum Message Successfully Transmitted and Decrypted", true);
+                } catch (err) {
+                    setStatus("❌ " + err.message, false);
+                }
+            }
+
+            // Event Listeners
+            $("btn-base2").onclick = () => runSimulation("base2");
+            $("btn-eve").onclick = () => runSimulation("eve");
+            $("btn-encrypt").onclick = convertToCiphertext;
+            $("btn-send").onclick = sendToBase2;
+        </script>
+    </body>
+    </html>

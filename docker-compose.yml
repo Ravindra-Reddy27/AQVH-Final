@@ -1,0 +1,22 @@
+services:
+  flask:
+    build: .
+    container_name: flask_app
+    env_file:
+      - .env
+    expose:
+      - "8000"
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_server
+    ports:
+      - "80:80"
+    volumes:
+      # FIX 1: Point to the 'nginx' folder for the config
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      
+      # FIX 2: Point to the 'templates' folder for the HTML file
+      - ./templates/index.html:/usr/share/nginx/html/index.html
+    depends_on:
+      - flask
