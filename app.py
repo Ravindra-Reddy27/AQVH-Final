@@ -30,22 +30,36 @@ CORS(app)
 IBM_TOKEN = os.getenv("IBM_QUANTUM_TOKEN")
 IBM_INSTANCE = os.getenv("IBM_QUANTUM_INSTANCE")
 
-if not IBM_TOKEN:
-    raise ValueError("CRITICAL: IBM_QUANTUM_TOKEN not found. This app requires a valid IBM Quantum connection.")
+# Global variable to store the backend AFTER we connect
+cached_backend = None
 
-try:
-    service = QiskitRuntimeService(
-        channel="ibm_cloud",
-        token=IBM_TOKEN,
-        instance=IBM_INSTANCE
-    )
-    # Strictly connect to the least busy real operational backend (no simulators)
-    backend = service.least_busy(operational=True, simulator=False)
-    print(f"✅ Connected to IBM Quantum backend: {backend.name}")
+def get_ibm_backend():
+    """
+    Connects to IBM Quantum only when needed (Lazy Loading).
+    """
+    global cached_backend
+    
+    # If we are already connected, return the existing backend
+    if cached_backend:
+        return cached_backend
 
-except Exception as e:
-    print(f"❌ IBM Quantum Connection Failed: {e}")
-    raise e
+    print("🔌 Initiating connection to IBM Quantum...")
+    try:
+        service = QiskitRuntimeService(
+            channel="ibm_cloud",
+            token=IBM_TOKEN,
+            instance=IBM_INSTANCE
+        )
+        # Fetch the backend
+        backend = service.least_busy(operational=True, simulator=False)
+        print(f"✅ Connected to: {backend.name}")
+        
+        cached_backend = backend
+        return backend
+        
+    except Exception as e:
+        print(f"❌ Connection Failed: {e}")
+        raise e
 
 # ---------------------------------------------------------
 shared_key_bits = []
@@ -143,8 +157,12 @@ def run_qkd():
         qc.measure(i, i)
 
     # 3. Submit Job to IBM Quantum
-    print(f"🚀 Submitting job to {backend.name}...")
     try:
+        # Connect to IBM NOW (inside the request)
+        backend = get_ibm_backend()
+        
+        print(f"🚀 Submitting job to {backend.name}...")
+        
         # Transpile for target backend
         pm = generate_preset_pass_manager(backend=backend, optimization_level=1)
         isa_qc = pm.run(qc)
